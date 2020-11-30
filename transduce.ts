@@ -52,10 +52,7 @@ const transduce = <b, Coll, Result>(
 export const map = <a, b, Coll, Result>(
   f: (x: a) => b
 ): transducer<a, b, Coll, Result> => (step) =>
-  transduce(
-    step,
-    (x) => x
-  )((result, input) => {
+  transduce(step)((result, input) => {
     return step(result, f(input));
   });
 
