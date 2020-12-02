@@ -1,9 +1,11 @@
 import { $, _ } from './hkts';
 
 export interface reducer<x, Coll, Result> {
-  (): Coll;
   (result: Coll): Result;
   (result: Coll, input: x): Coll;
+}
+export interface InitReducer<x, Coll, Result> extends reducer<x, Coll, Result> {
+  (): Coll;
 }
 export type transducer<a, b, Coll, Result> = (
   r: reducer<b, Coll, Result>

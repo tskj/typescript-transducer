@@ -1,31 +1,36 @@
-import { $, _ } from './hkts';
-import { multiArity, reducer } from './transduce';
+import { InitReducer, multiArity, reducer } from './transduce';
 
 interface IReducable<x> {
-  _reduce<Acc, Res>(reducer: reducer<x, Acc, Res>, init?: Acc): Res;
+  _reduce<Acc, Res>(reducer: reducer<x, Acc, Res>): Res;
+  _reduce<Acc, Res>(reducer: InitReducer<x, Acc, Res>, init: Acc): Res;
 }
-
-export const reduceList = <V, Acc, Res>(
-  reducer: reducer<V, Acc, Res>,
-  acc: Acc,
-  list: V[]
-): Res => {
-  if (list.length === 0) {
-    return reducer(acc);
-  }
-  const [x, ...xs] = list;
-  const next = reducer(acc, x);
-  return reduceList(reducer, next, xs);
-};
 
 export const concatList = <T, Coll, Res>(step: reducer<T, Coll, Res>) => (
   result: Coll,
-  input: T[]
+  input: IReducable<T>
 ) =>
-  reduceList(
-    multiArity({ arity0: () => result, arity1: (x) => x, arity2: step }),
-    result,
-    input
+  input._reduce(
+    multiArity({ arity0: () => result, arity1: (x) => x, arity2: step })
   );
 
+declare global {
+  interface Array<T> extends IReducable<T> {}
+}
+Array.prototype._reduce = function <V, Acc, Res>(
+  this: V[],
+  reducer: any,
+  acc?: any
+): Res {
+  if (acc === undefined) {
+    return this._reduce(reducer, reducer());
+  }
+  if (this.length === 0) {
+    return reducer(acc);
+  }
+  const [x, ...xs] = this;
+  const next = reducer(acc, x);
+  return xs._reduce(reducer, next);
+};
 export const conjList = <V>(list: V[], x: V): V[] => [...list, x];
+
+const x = ['']._reduce<number, number>((acc: number, res: string) => acc, 0);
