@@ -1,5 +1,3 @@
-import { $, _ } from './hkts';
-
 export interface reducer<x, Coll, Result> {
   (result: Coll): Result;
   (result: Coll, input: x): Coll;
@@ -8,8 +6,8 @@ export interface InitReducer<x, Coll, Result> extends reducer<x, Coll, Result> {
   (): Coll;
 }
 export type transducer<a, b, Coll, Result> = (
-  r: reducer<b, Coll, Result>
-) => reducer<a, Coll, Result>;
+  r: InitReducer<b, Coll, Result>
+) => InitReducer<a, Coll, Result>;
 
 const reducedSymbol: unique symbol = Symbol('reduced');
 type Reduced<T> = { [reducedSymbol]: true; value: T };
@@ -42,9 +40,11 @@ export const multiArity = <a, b, x, y, z>({
   }) as multiArity<a, b, x, y, z>;
 
 const transduce = <b, Coll, Result>(
-  step: reducer<b, Coll, Result>,
+  step: InitReducer<b, Coll, Result>,
   onComplete: (result: Coll) => Coll = (x) => x
-) => <a>(reducer: (result: Coll, input: a) => Coll): reducer<a, Coll, Result> =>
+) => <a>(
+  reducer: (result: Coll, input: a) => Coll
+): InitReducer<a, Coll, Result> =>
   multiArity({
     arity0: step,
     arity1: (result) => step(onComplete(result)),

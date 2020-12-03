@@ -1,8 +1,8 @@
 import { InitReducer, multiArity, reducer } from './transduce';
 
 interface IReducable<x> {
-  _reduce<Acc, Res>(reducer: reducer<x, Acc, Res>): Res;
-  _reduce<Acc, Res>(reducer: InitReducer<x, Acc, Res>, init: Acc): Res;
+  _reduce<Acc, Res>(reducer: reducer<x, Acc, Res>, init: Acc): Res;
+  _reduce<Acc, Res>(reducer: InitReducer<x, Acc, Res>): Res;
 }
 
 export const concatList = <T, Coll, Res>(step: reducer<T, Coll, Res>) => (
@@ -18,8 +18,8 @@ declare global {
 }
 Array.prototype._reduce = function <V, Acc, Res>(
   this: V[],
-  reducer: any,
-  acc?: any
+  reducer: InitReducer<V, Acc, Res>,
+  acc?: Acc
 ): Res {
   if (acc === undefined) {
     return this._reduce(reducer, reducer());
@@ -33,4 +33,4 @@ Array.prototype._reduce = function <V, Acc, Res>(
 };
 export const conjList = <V>(list: V[], x: V): V[] => [...list, x];
 
-const x = ['']._reduce<number, number>((acc: number, res: string) => acc, 0);
+const x = ['']._reduce<number, number>((acc: number, res?: string) => acc, 0);
